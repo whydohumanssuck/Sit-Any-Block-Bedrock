@@ -1,0 +1,39 @@
+{
+    "format_version": 2,
+    "header": {
+        "name": "Sit Any Block RP",
+        "description": "Sit on any block addon - Resource Pack",
+        "uuid": "d11ad00c-204b-4b73-a624-fbe12161b1fa",
+        "version": [
+            1,
+            0,
+            0
+        ],
+        "min_engine_version": [
+            1,
+            21,
+            0
+        ]
+    },
+    "modules": [
+        {
+            "type": "resources",
+            "uuid": "d11ad00c-204b-4b73-a624-fbe12161b1fa",
+            "version": [
+                1,
+                0,
+                0
+            ]
+        }
+    ],
+    "dependencies": [
+        {
+            "uuid": "0a9b3a62-89a5-4a2d-9e1b-1d218e984a85",
+            "version": [
+                1,
+                0,
+                0
+            ]
+        }
+    ]
+}

@@ -1,0 +1,36 @@
+# Sit Any Block - Command Block Setup
+# =====================================
+# Place these command blocks in a chain in your world.
+# Make sure to enable "Always Active" on the repeating command block.
+
+## Step 1: Place a Repeating Command Block (Always Active)
+# Command:
+execute as @a[tag=!sitting] at @s anchored eyes positioned ^^^3 run summon cushion:seat_marker ~ ~ ~
+
+## Step 2: Chain Command Block (Conditional, Always Active)  
+# Command:
+execute as @a[tag=!sitting] at @s if entity @e[type=cushion:seat_marker,tag=!used,r=2] run tag @s add sitting
+
+## Step 3: Chain Command Block (Unconditional, Always Active)
+# Command:
+execute as @a[tag=sitting] at @s unless entity @e[type=cushion:seat_marker,r=1,tag=used] run tag @s remove sitting
+
+## Step 4: Chain Command Block (Unconditional, Always Active)
+# Command:
+effect @a[tag=sitting] invisibility 1 255 true
+
+## Step 5: Chain Command Block (Unconditional, Always Active)
+# Command:
+execute as @e[type=cushion:seat_marker,tag=!used] at @s run tag @s add used
+
+## Alternative: One-Command Setup (paste in chat)
+# /give @p command_block
+# Then place and enter the commands above in order.
+
+## How to Use:
+# 1. Place the 5 command blocks in a chain (Repeating -> 4x Chain)
+# 2. Set the first one to "Repeat" and "Always Active"
+# 3. Set all chain ones to "Chain" and "Always Active"  
+# 4. Look at any block - "Sit" button appears
+# 5. Tap the button to sit
+# 6. Jump or crouch to stand up

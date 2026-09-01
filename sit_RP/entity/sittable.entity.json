@@ -1,0 +1,20 @@
+{
+    "format_version": "1.21.0",
+    "minecraft:client_entity": {
+        "description": {
+            "identifier": "cushion:sittable",
+            "materials": {
+                "default": "entity_alphatest"
+            },
+            "textures": {
+                "default": "textures/entity/invisible"
+            },
+            "geometry": {
+                "default": "geometry.sittable"
+            },
+            "render_controllers": [
+                "controller.render.sittable"
+            ]
+        }
+    }
+}

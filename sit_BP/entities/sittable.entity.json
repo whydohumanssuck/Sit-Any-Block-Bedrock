@@ -1,0 +1,86 @@
+{
+    "format_version": "1.21.0",
+    "minecraft:entity": {
+        "description": {
+            "identifier": "cushion:sittable",
+            "is_spawnable": true,
+            "is_summonable": true,
+            "is_experimental": false
+        },
+        "components": {
+            "minecraft:type_family": {
+                "family": [
+                    "sittable",
+                    "mob"
+                ]
+            },
+            "minecraft:health": {
+                "value": 999,
+                "max": 999
+            },
+            "minecraft:collision_box": {
+                "width": 0.1,
+                "height": 0.1
+            },
+            "minecraft:movement": {
+                "value": 0
+            },
+            "minecraft:physics": {
+                "has_gravity": false,
+                "has_collision": false
+            },
+            "minecraft:pushable": {
+                "is_pushable": false,
+                "is_pushable_by_piston": false
+            },
+            "minecraft:insentient": {
+                "is_rotatable": true
+            },
+            "minecraft:rideable": {
+                "seat_count": 1,
+                "family_types": [
+                    "player"
+                ],
+                "pull_in_entities": false,
+                "seats": [
+                    {
+                        "position": [
+                            0.0,
+                            0.35,
+                            0.0
+                        ],
+                        "min_rider_count": 0,
+                        "max_rider_count": 0,
+                        "locked_rider_damage_scale": 0,
+                        "lock_rider_rotation": 0
+                    }
+                ]
+            },
+            "minecraft:breathable": {
+                "total_supply": 999,
+                "suffocate_time": 0,
+                "breathes_air": true,
+                "breathes_water": true
+            },
+            "minecraft:damage_sensor": {
+                "triggers": {
+                    "on_damage": {
+                        "filters": {},
+                        "event": "hurt"
+                    }
+                }
+            },
+            "minecraft:despawn": {
+                "despawn_from_surface": false,
+                "despawn_from_distance": false
+            },
+            "minecraft:persistent": {},
+            "minecraft:conditional_bandwidth_optimization": {}
+        },
+        "events": {
+            "hurt": {
+                "remove": {}
+            }
+        }
+    }
+}
