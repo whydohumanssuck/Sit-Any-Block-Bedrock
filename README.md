@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="banner.jpg" width="700" alt="Get Seated Banner">
+<img src="banner.jpg" width="700" alt="GetSeated Banner">
 
 > **This mod adds sit-on-any-block functionality to your Minecraft Bedrock world**
 
@@ -26,7 +26,7 @@
 
 ---
 
-# Get Seated
+# GetSeated
 
 A cushion-style sitting addon for Minecraft Bedrock 1.21.130. Hold a stick, right-click any block, and sit on it.
 
