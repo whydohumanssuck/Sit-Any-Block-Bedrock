@@ -1,12 +1,12 @@
 import { world, system } from "@minecraft/server";
 
 // =====================================================
-// Sit Any Block - Hold stick + right-click = sit
+// Sit Any Block - Fixed version
+// Hold stick + right-click = sit on any block
 // =====================================================
 
 const CHAIR_ITEM = "minecraft:stick";
 const SEAT_ENTITY = "cushion:sittable";
-
 const sittingPlayers = new Map();
 
 world.sendMessage("§6[§eSit§6] §aScript loaded!");
@@ -24,21 +24,16 @@ function findTargetBlock(player) {
         y += dir.y * 0.3;
         z += dir.z * 0.3;
 
-        const block = player.dimension.getBlock({
-            x: Math.floor(x),
-            y: Math.floor(y),
-            z: Math.floor(z)
-        });
+        const bx = Math.floor(x);
+        const by = Math.floor(y);
+        const bz = Math.floor(z);
 
+        const block = player.dimension.getBlock({ x: bx, y: by, z: bz });
         if (block && block.typeId !== "minecraft:air" &&
             block.typeId !== "minecraft:water" &&
             block.typeId !== "minecraft:cave_air" &&
             block.typeId !== "minecraft:void_air") {
-            return {
-                x: Math.floor(x) + 0.5,
-                y: Math.floor(y) + 1.0,
-                z: Math.floor(z) + 0.5
-            };
+            return { x: bx + 0.5, y: by + 1, z: bz + 0.5 };
         }
     }
     return null;
@@ -56,7 +51,7 @@ function isHoldingStick(player) {
     }
 }
 
-// ---- Sit ----
+// ---- Sit: spawn seat at player, mount, then move to block ----
 function sitDown(player) {
     if (sittingPlayers.has(player.name)) {
         standUp(player);
@@ -70,27 +65,34 @@ function sitDown(player) {
     }
 
     try {
-        const entity = player.dimension.spawnEntity(SEAT_ENTITY, pos);
-        player.teleport({ x: pos.x, y: pos.y - 0.5, z: pos.z });
+        // Step 1: Spawn seat at PLAYER position (safe, no block collision)
+        const seat = player.dimension.spawnEntity(SEAT_ENTITY, {
+            x: player.location.x,
+            y: player.location.y,
+            z: player.location.z
+        });
 
+        // Step 2: Mount player IMMEDIATELY (same tick, no delay)
+        seat.addRider(player);
+
+        // Step 3: Move the seat (with rider) to the block
         system.runTimeout(function () {
             try {
-                if (entity && entity.isValid) {
-                    entity.addRider(player);
+                if (seat && seat.isValid) {
+                    seat.teleport(pos);
                 }
-            } catch (err) {
-                // ignore
-            }
-        }, 3);
+            } catch (e) {}
+        }, 1);
 
         player.onScreenDisplay.setActionBar("§aSitting - crouch to stand");
-        sittingPlayers.set(player.name, { entity: entity, frame: 0 });
+        sittingPlayers.set(player.name, { entity: seat, frame: 0 });
+
     } catch (e) {
-        // ignore
+        player.sendMessage("§cSit error: " + e);
     }
 }
 
-// ---- Stand ----
+// ---- Stand up ----
 function standUp(player) {
     const data = sittingPlayers.get(player.name);
     if (!data) return;
@@ -100,25 +102,20 @@ function standUp(player) {
             data.entity.removeRider(player);
             data.entity.remove();
         }
-    } catch (e) {
-        // ignore
-    }
+    } catch (e) {}
 
     player.onScreenDisplay.setActionBar("§eStood up");
     sittingPlayers.delete(player.name);
 }
 
-// ---- RIGHT-CLICK (use item) ----
+// ---- RIGHT-CLICK ----
 world.afterEvents.itemUse.subscribe(function (event) {
     try {
         const player = event.source;
         if (!player || !player.isValid) return;
         if (!isHoldingStick(player)) return;
-
         sitDown(player);
-    } catch (e) {
-        // ignore
-    }
+    } catch (e) {}
 });
 
 // ---- CROUCH TO STAND ----
@@ -128,19 +125,17 @@ system.runInterval(function () {
         const name = entries[i][0];
         const data = entries[i][1];
 
-        const players = world.getAllPlayers();
         let player = null;
-        for (let j = 0; j < players.length; j++) {
-            if (players[j].name === name) {
-                player = players[j];
+        const allPlayers = world.getAllPlayers();
+        for (let j = 0; j < allPlayers.length; j++) {
+            if (allPlayers[j].name === name) {
+                player = allPlayers[j];
                 break;
             }
         }
 
         if (!player || !player.isValid) {
-            try {
-                if (data.entity && data.entity.isValid) data.entity.remove();
-            } catch (e) {}
+            try { if (data.entity && data.entity.isValid) data.entity.remove(); } catch (e) {}
             sittingPlayers.delete(name);
             continue;
         }
