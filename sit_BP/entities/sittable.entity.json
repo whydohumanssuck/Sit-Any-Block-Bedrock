@@ -7,20 +7,51 @@
             "is_summonable": true,
             "is_experimental": false
         },
+        "component_groups": {
+            "cushion:despawn": {
+                "minecraft:instant_despawn": {}
+            }
+        },
         "components": {
             "minecraft:type_family": {
-                "family": ["sittable", "mob"]
+                "family": ["immovable", "inanimate"]
+            },
+            "minecraft:rideable": {
+                "family_types": ["player"],
+                "interact_text": "Sit",
+                "crouching_skip_interact": true,
+                "pull_in_entities": false,
+                "rider_can_interact": false,
+                "controlling_seat": 0,
+                "seat_count": 1,
+                "seats": [{
+                    "position": [0.0, -0.2, 0.0],
+                    "min_rider_count": 0,
+                    "max_rider_count": 1
+                }]
+            },
+            "minecraft:environment_sensor": {
+                "triggers": [{
+                    "filters": [{
+                        "all_of": [{
+                            "test": "rider_count",
+                            "subject": "self",
+                            "operator": "==",
+                            "value": 0
+                        }]
+                    }],
+                    "event": "cushion:despawn_entity",
+                    "target": "self"
+                }]
             },
             "minecraft:health": {
-                "value": 999,
-                "max": 999
+                "value": 1,
+                "max": 1,
+                "min": 1
             },
             "minecraft:collision_box": {
-                "width": 0.1,
-                "height": 0.1
-            },
-            "minecraft:movement": {
-                "value": 0
+                "width": 0.0,
+                "height": 0.0
             },
             "minecraft:physics": {
                 "has_gravity": false,
@@ -33,16 +64,6 @@
             "minecraft:insentient": {
                 "is_rotatable": true
             },
-            "minecraft:rideable": {
-                "seat_count": 1,
-                "family_types": ["player"],
-                "pull_in_entities": false,
-                "seats": [{
-                    "position": [0.0, 0.3, 0.0],
-                    "min_rider_count": 0,
-                    "max_rider_count": 0
-                }]
-            },
             "minecraft:breathable": {
                 "total_supply": 999,
                 "suffocate_time": 0,
@@ -53,19 +74,20 @@
                 "triggers": {
                     "on_damage": {
                         "filters": {},
-                        "event": "hurt"
+                        "event": "cushion:hurt"
                     }
                 }
-            },
-            "minecraft:despawn": {
-                "despawn_from_surface": false,
-                "despawn_from_distance": false
             },
             "minecraft:persistent": {},
             "minecraft:conditional_bandwidth_optimization": {}
         },
         "events": {
-            "hurt": {
+            "cushion:despawn_entity": {
+                "sequence": [{
+                    "add": { "component_groups": ["cushion:despawn"] }
+                }]
+            },
+            "cushion:hurt": {
                 "remove": {}
             }
         }
