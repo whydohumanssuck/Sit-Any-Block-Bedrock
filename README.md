@@ -1,10 +1,30 @@
 <div align="center">
 
-![Get Seated](sit_RP/pack_icon.png)
+<img src="banner.jpg" width="700" alt="Get Seated Banner">
 
-> **Made by davidizdead on instagram**
+> **This mod adds sit-on-any-block functionality to your Minecraft Bedrock world**
 
 </div>
+
+<div align="center">
+
+![Bedrock](https://img.shields.io/badge/Bedrock%201.21.130-62B47A?style=flat-square&logo=minecraft&logoColor=white)
+![Script API](https://img.shields.io/badge/Script%20API-Required-FF6B35?style=flat-square)
+![Add-ons](https://img.shields.io/badge/Add--ons-Bedrock%20Edition-4A90D9?style=flat-square&logo=minecraft&logoColor=white)
+![License](https://img.shields.io/badge/License-MIT-yellow?style=flat-square&logo=open-source-initiative&logoColor=white)
+![PRs](https://img.shields.io/badge/PRs-Welcome-brightgreen?style=flat-square)
+![Beginner](https://img.shields.io/badge/Beginner-Friendly-1E90FF?style=flat-square)
+![Made](https://img.shields.io/badge/Made%20with-%E2%9D%A4-ff69b4?style=flat-square)
+
+[![Stars](https://img.shields.io/github/stars/whydohumanssuck/Sit-Any-Block-Bedrock?style=social)](https://github.com/whydohumanssuck/Sit-Any-Block-Bedrock/stargazers)
+[![Forks](https://img.shields.io/github/forks/whydohumanssuck/Sit-Any-Block-Bedrock?style=social)](https://github.com/whydohumanssuck/Sit-Any-Block-Bedrock/forks)
+[![Issues](https://img.shields.io/github/issues/whydohumanssuck/Sit-Any-Block-Bedrock?style=flat-square)](https://github.com/whydohumanssuck/Sit-Any-Block-Bedrock/issues)
+[![Last Commit](https://img.shields.io/github/last-commit/whydohumanssuck/Sit-Any-Block-Bedrock?style=flat-square)](https://github.com/whydohumanssuck/Sit-Any-Block-Bedrock/commits/main)
+[![Repo Size](https://img.shields.io/github/repo-size/whydohumanssuck/Sit-Any-Block-Bedrock?style=flat-square)](https://github.com/whydohumanssuck/Sit-Any-Block-Bedrock)
+
+</div>
+
+---
 
 # Get Seated
 
