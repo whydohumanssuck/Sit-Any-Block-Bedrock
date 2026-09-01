@@ -2,39 +2,25 @@
     "format_version": 2,
     "header": {
         "name": "Sit Any Block",
-        "description": "Sit on any block - just hold a chair item and click!",
+        "description": "Hold stick + right-click any block to sit",
         "uuid": "eef763c3-da57-4452-8ada-6c3b8f728ad4",
-        "version": [
-            1,
-            0,
-            0
-        ],
-        "min_engine_version": [
-            1,
-            21,
-            0
-        ]
+        "version": [1, 0, 0],
+        "min_engine_version": [1, 21, 130]
     },
     "modules": [
         {
+            "description": "item and entity definitions",
             "type": "data",
             "uuid": "c8fffaf6-a2c8-4076-a4a3-9aa1fdc5ad5a",
-            "version": [
-                1,
-                0,
-                0
-            ]
+            "version": [1, 0, 0]
         },
         {
+            "description": "scripts",
             "type": "script",
             "language": "javascript",
-            "uuid": "e8590406-24d6-4357-af8c-6afb1161d8d3",
+            "uuid": "a1b2c3d4-e5f6-4789-abcd-ef0123456789",
             "entry": "scripts/sitting.js",
-            "version": [
-                1,
-                0,
-                0
-            ]
+            "version": [1, 0, 0]
         }
     ],
     "dependencies": [

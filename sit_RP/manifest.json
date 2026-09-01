@@ -2,38 +2,23 @@
     "format_version": 2,
     "header": {
         "name": "Sit Any Block",
-        "description": "Sit on any block - Resource Pack",
+        "description": "Hold stick + right-click any block to sit",
         "uuid": "e7257d89-83bf-4710-b52b-44f4cc27ba8f",
-        "version": [
-            1,
-            0,
-            0
-        ],
-        "min_engine_version": [
-            1,
-            21,
-            0
-        ]
+        "version": [1, 0, 0],
+        "min_engine_version": [1, 21, 130]
     },
     "modules": [
         {
+            "description": "resource definitions",
             "type": "resources",
             "uuid": "862c5a23-f40f-4aa8-a068-a2e5fee68d22",
-            "version": [
-                1,
-                0,
-                0
-            ]
+            "version": [1, 0, 0]
         }
     ],
     "dependencies": [
         {
             "uuid": "c8fffaf6-a2c8-4076-a4a3-9aa1fdc5ad5a",
-            "version": [
-                1,
-                0,
-                0
-            ]
+            "version": [1, 0, 0]
         }
     ]
 }

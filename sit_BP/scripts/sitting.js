@@ -1,17 +1,17 @@
 import { world, system } from "@minecraft/server";
 
+// =====================================================
+// Sit Any Block - Hold stick + right-click = sit
+// =====================================================
+
 const CHAIR_ITEM = "minecraft:stick";
 const SEAT_ENTITY = "cushion:sittable";
-const RAY_STEP = 0.3;
-const MAX_REACH = 5;
 
 const sittingPlayers = new Map();
-let scriptLoaded = false;
 
-// ---- Debug: confirm script is running ----
-world.sendMessage("§6[§eSit Any Block§6] §aScript loaded! Hold a stick and right-click a block to sit.");
+world.sendMessage("§6[§eSit§6] §aScript loaded!");
 
-// ---- Find block the player is looking at ----
+// ---- Find block player is looking at ----
 function findTargetBlock(player) {
     const eyeY = player.location.y + 1.62;
     const dir = player.getViewDirection();
@@ -19,41 +19,53 @@ function findTargetBlock(player) {
     let y = eyeY;
     let z = player.location.z;
 
-    for (let i = 0; i < MAX_REACH / RAY_STEP; i++) {
-        x += dir.x * RAY_STEP;
-        y += dir.y * RAY_STEP;
-        z += dir.z * RAY_STEP;
+    for (let i = 0; i < 16; i++) {
+        x += dir.x * 0.3;
+        y += dir.y * 0.3;
+        z += dir.z * 0.3;
 
-        const bx = Math.floor(x);
-        const by = Math.floor(y);
-        const bz = Math.floor(z);
+        const block = player.dimension.getBlock({
+            x: Math.floor(x),
+            y: Math.floor(y),
+            z: Math.floor(z)
+        });
 
-        const block = player.dimension.getBlock({ x: bx, y: by, z: bz });
-        if (block && block.typeId !== "minecraft:air" && block.typeId !== "minecraft:water" && block.typeId !== "minecraft:cave_air") {
-            return { x: bx + 0.5, y: by + 1.0, z: bz + 0.5 };
+        if (block && block.typeId !== "minecraft:air" &&
+            block.typeId !== "minecraft:water" &&
+            block.typeId !== "minecraft:cave_air" &&
+            block.typeId !== "minecraft:void_air") {
+            return {
+                x: Math.floor(x) + 0.5,
+                y: Math.floor(y) + 1.0,
+                z: Math.floor(z) + 0.5
+            };
         }
     }
     return null;
 }
 
-// ---- Get held item ----
-function getHeldItem(player) {
+// ---- Check if holding stick ----
+function isHoldingStick(player) {
     try {
         const inv = player.getComponent("minecraft:inventory");
-        if (!inv || !inv.container) return null;
-        const item = inv.container.getSlot(player.selectedSlotIndex);
-        if (!item || !item.typeId) return null;
-        return item.typeId;
+        if (!inv || !inv.container) return false;
+        const slot = inv.container.getSlot(player.selectedSlotIndex);
+        return slot && slot.typeId === CHAIR_ITEM;
     } catch (e) {
-        return null;
+        return false;
     }
 }
 
-// ---- Sit down ----
+// ---- Sit ----
 function sitDown(player) {
+    if (sittingPlayers.has(player.name)) {
+        standUp(player);
+        return;
+    }
+
     const pos = findTargetBlock(player);
     if (!pos) {
-        player.sendMessage("§cLook at a solid block to sit!");
+        player.sendMessage("§cLook at a block to sit!");
         return;
     }
 
@@ -61,24 +73,24 @@ function sitDown(player) {
         const entity = player.dimension.spawnEntity(SEAT_ENTITY, pos);
         player.teleport({ x: pos.x, y: pos.y - 0.5, z: pos.z });
 
-        system.runTimeout(() => {
+        system.runTimeout(function () {
             try {
                 if (entity && entity.isValid) {
                     entity.addRider(player);
                 }
-            } catch (e) {
-                player.sendMessage("§cFailed to sit: " + e);
+            } catch (err) {
+                // ignore
             }
         }, 3);
 
-        player.onScreenDisplay.setActionBar("§a✔ Sitting — crouch to stand");
-        sittingPlayers.set(player.name, { entity, frame: 0 });
+        player.onScreenDisplay.setActionBar("§aSitting - crouch to stand");
+        sittingPlayers.set(player.name, { entity: entity, frame: 0 });
     } catch (e) {
-        player.sendMessage("§cError: " + e);
+        // ignore
     }
 }
 
-// ---- Stand up ----
+// ---- Stand ----
 function standUp(player) {
     const data = sittingPlayers.get(player.name);
     if (!data) return;
@@ -88,53 +100,47 @@ function standUp(player) {
             data.entity.removeRider(player);
             data.entity.remove();
         }
-    } catch (e) {}
+    } catch (e) {
+        // ignore
+    }
 
     player.onScreenDisplay.setActionBar("§eStood up");
     sittingPlayers.delete(player.name);
 }
 
-// ---- RIGHT-CLICK BLOCK = SIT ----
-world.afterEvents.itemUseOn.subscribe((event) => {
+// ---- RIGHT-CLICK (use item) ----
+world.afterEvents.itemUse.subscribe(function (event) {
     try {
         const player = event.source;
         if (!player || !player.isValid) return;
+        if (!isHoldingStick(player)) return;
 
-        const item = getHeldItem(player);
-        if (item !== CHAIR_ITEM) return;
-
-        if (sittingPlayers.has(player.name)) {
-            standUp(player);
-        } else {
-            sitDown(player);
-        }
+        sitDown(player);
     } catch (e) {
-        world.sendMessage("§c[Sit] Error: " + e);
+        // ignore
     }
 });
 
-// ---- Also handle itemUse (right-click air) as backup ----
-world.afterEvents.itemUse.subscribe((event) => {
-    try {
-        const player = event.source;
-        if (!player || !player.isValid) return;
+// ---- CROUCH TO STAND ----
+system.runInterval(function () {
+    const entries = Array.from(sittingPlayers.entries());
+    for (let i = 0; i < entries.length; i++) {
+        const name = entries[i][0];
+        const data = entries[i][1];
 
-        const item = getHeldItem(player);
-        if (item !== CHAIR_ITEM) return;
-
-        // If already sitting, stand up
-        if (sittingPlayers.has(player.name)) {
-            standUp(player);
+        const players = world.getAllPlayers();
+        let player = null;
+        for (let j = 0; j < players.length; j++) {
+            if (players[j].name === name) {
+                player = players[j];
+                break;
+            }
         }
-    } catch (e) {}
-});
 
-// ---- Crouch to stand up ----
-system.runInterval(() => {
-    for (const [name, data] of sittingPlayers) {
-        const player = world.getAllPlayers().find(p => p.name === name);
         if (!player || !player.isValid) {
-            try { if (data.entity && data.entity.isValid) data.entity.remove(); } catch (e) {}
+            try {
+                if (data.entity && data.entity.isValid) data.entity.remove();
+            } catch (e) {}
             sittingPlayers.delete(name);
             continue;
         }
