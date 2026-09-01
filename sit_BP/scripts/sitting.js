@@ -1,20 +1,17 @@
 import { world, system } from "@minecraft/server";
 
-// =====================================================
-// Sit Any Block - Automatic Sitting (No Command Blocks)
-// Hold a stick → right-click any block → you sit!
-// Crouch → you stand up
-// =====================================================
-
 const CHAIR_ITEM = "minecraft:stick";
 const SEAT_ENTITY = "cushion:sittable";
 const RAY_STEP = 0.3;
 const MAX_REACH = 5;
 
-// Track who is sitting
 const sittingPlayers = new Map();
+let scriptLoaded = false;
 
-// ---- Find the block the player is looking at ----
+// ---- Debug: confirm script is running ----
+world.sendMessage("§6[§eSit Any Block§6] §aScript loaded! Hold a stick and right-click a block to sit.");
+
+// ---- Find block the player is looking at ----
 function findTargetBlock(player) {
     const eyeY = player.location.y + 1.62;
     const dir = player.getViewDirection();
@@ -27,9 +24,13 @@ function findTargetBlock(player) {
         y += dir.y * RAY_STEP;
         z += dir.z * RAY_STEP;
 
-        const block = player.dimension.getBlock({ x: Math.floor(x), y: Math.floor(y), z: Math.floor(z) });
-        if (block && block.typeId !== "minecraft:air" && block.typeId !== "minecraft:water") {
-            return { x: Math.floor(x) + 0.5, y: Math.floor(y) + 1.0, z: Math.floor(z) + 0.5 };
+        const bx = Math.floor(x);
+        const by = Math.floor(y);
+        const bz = Math.floor(z);
+
+        const block = player.dimension.getBlock({ x: bx, y: by, z: bz });
+        if (block && block.typeId !== "minecraft:air" && block.typeId !== "minecraft:water" && block.typeId !== "minecraft:cave_air") {
+            return { x: bx + 0.5, y: by + 1.0, z: bz + 0.5 };
         }
     }
     return null;
@@ -37,24 +38,44 @@ function findTargetBlock(player) {
 
 // ---- Get held item ----
 function getHeldItem(player) {
-    const inv = player.getComponent("minecraft:inventory").container;
-    const item = inv.getSlot(player.selectedSlotIndex);
-    return item?.typeId ?? null;
+    try {
+        const inv = player.getComponent("minecraft:inventory");
+        if (!inv || !inv.container) return null;
+        const item = inv.container.getSlot(player.selectedSlotIndex);
+        if (!item || !item.typeId) return null;
+        return item.typeId;
+    } catch (e) {
+        return null;
+    }
 }
 
 // ---- Sit down ----
 function sitDown(player) {
     const pos = findTargetBlock(player);
-    if (!pos) return;
+    if (!pos) {
+        player.sendMessage("§cLook at a solid block to sit!");
+        return;
+    }
 
-    const entity = player.dimension.spawnEntity(SEAT_ENTITY, pos);
-    player.teleport({ x: pos.x, y: pos.y - 0.5, z: pos.z });
-    system.runTimeout(() => {
-        try { entity.addRider(player); } catch (e) {}
-    }, 2);
+    try {
+        const entity = player.dimension.spawnEntity(SEAT_ENTITY, pos);
+        player.teleport({ x: pos.x, y: pos.y - 0.5, z: pos.z });
 
-    player.onScreenDisplay.setActionBar("§a✔ Sitting — crouch to stand");
-    sittingPlayers.set(player.name, { entity, frame: 0 });
+        system.runTimeout(() => {
+            try {
+                if (entity && entity.isValid) {
+                    entity.addRider(player);
+                }
+            } catch (e) {
+                player.sendMessage("§cFailed to sit: " + e);
+            }
+        }, 3);
+
+        player.onScreenDisplay.setActionBar("§a✔ Sitting — crouch to stand");
+        sittingPlayers.set(player.name, { entity, frame: 0 });
+    } catch (e) {
+        player.sendMessage("§cError: " + e);
+    }
 }
 
 // ---- Stand up ----
@@ -62,34 +83,58 @@ function standUp(player) {
     const data = sittingPlayers.get(player.name);
     if (!data) return;
 
-    try { data.entity.removeRider(player); } catch (e) {}
-    try { data.entity.remove(); } catch (e) {}
+    try {
+        if (data.entity && data.entity.isValid) {
+            data.entity.removeRider(player);
+            data.entity.remove();
+        }
+    } catch (e) {}
 
     player.onScreenDisplay.setActionBar("§eStood up");
     sittingPlayers.delete(player.name);
 }
 
-// ---- Block right-click = SIT ----
+// ---- RIGHT-CLICK BLOCK = SIT ----
 world.afterEvents.itemUseOn.subscribe((event) => {
-    const player = event.source;
-    if (!player?.isValid) return;
+    try {
+        const player = event.source;
+        if (!player || !player.isValid) return;
 
-    const item = getHeldItem(player);
-    if (item !== CHAIR_ITEM) return;
+        const item = getHeldItem(player);
+        if (item !== CHAIR_ITEM) return;
 
-    if (sittingPlayers.has(player.name)) {
-        standUp(player);
-    } else {
-        sitDown(player);
+        if (sittingPlayers.has(player.name)) {
+            standUp(player);
+        } else {
+            sitDown(player);
+        }
+    } catch (e) {
+        world.sendMessage("§c[Sit] Error: " + e);
     }
 });
 
-// ---- Crouch to stand up (every tick) ----
+// ---- Also handle itemUse (right-click air) as backup ----
+world.afterEvents.itemUse.subscribe((event) => {
+    try {
+        const player = event.source;
+        if (!player || !player.isValid) return;
+
+        const item = getHeldItem(player);
+        if (item !== CHAIR_ITEM) return;
+
+        // If already sitting, stand up
+        if (sittingPlayers.has(player.name)) {
+            standUp(player);
+        }
+    } catch (e) {}
+});
+
+// ---- Crouch to stand up ----
 system.runInterval(() => {
     for (const [name, data] of sittingPlayers) {
         const player = world.getAllPlayers().find(p => p.name === name);
-        if (!player?.isValid) {
-            try { data.entity.remove(); } catch (e) {}
+        if (!player || !player.isValid) {
+            try { if (data.entity && data.entity.isValid) data.entity.remove(); } catch (e) {}
             sittingPlayers.delete(name);
             continue;
         }
@@ -102,5 +147,3 @@ system.runInterval(() => {
         }
     }
 }, 1);
-
-world.sendMessage("§6[§eSit Any Block§6] §fHold a stick and right-click any block to sit!");
