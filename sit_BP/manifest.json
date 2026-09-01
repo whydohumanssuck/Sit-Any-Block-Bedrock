@@ -1,0 +1,30 @@
+{
+    "format_version": 2,
+    "header": {
+        "name": "Sit Any Block",
+        "description": "Sit on any block - just hold a chair item and click!",
+        "uuid": "9f3a7c12-4b8e-4d2f-a615-8c3e9f2b1d4a",
+        "version": [1, 0, 0],
+        "min_engine_version": [1, 21, 0]
+    },
+    "modules": [
+        {
+            "type": "data",
+            "uuid": "9f3a7c12-4b8e-4d2f-a615-8c3e9f2b1d4a",
+            "version": [1, 0, 0]
+        },
+        {
+            "type": "script",
+            "language": "javascript",
+            "uuid": "b2e5f8a1-7c3d-4e6b-9a0f-1d2c3e4f5a6b",
+            "entry": "scripts/sitting.js",
+            "version": [1, 0, 0]
+        }
+    ],
+    "dependencies": [
+        {
+            "module_name": "@minecraft/server",
+            "version": "1.12.0"
+        }
+    ]
+}
